@@ -13,12 +13,13 @@ It models the transition of source assets out of legacy SCM platforms (like CA E
 *   **Pipeline Automation Scripting:** Python (DBB logic & Zowe CLI orchestration simulation).
 *   **Configuration & Deployment:** Ansible & YAML (Emulating IBM Wazi Deploy / UrbanCode Deploy).
 *   **CI/CD Orchestration:** GitHub Actions.
+*   **Container Portability:** Docker (Kubernetes and Red Hat OpenShift readiness).
 
 ---
 
----
+## 🏗️ Architecture Workflow
 
-## 🏗️ Architecture Blueprint
+Every code change pushed to the main repository passes through a structured automated lifecycle:
 
 ```mermaid
 graph TD
@@ -68,15 +69,6 @@ graph TD
 
 ---
 
-## 🏗️ Architecture Workflow
-
-1.  **Git Ingestion:** Code changes to COBOL (`/cobol`) or JCL (`/jcl`) trigger the DevOps pipeline.
-2.  **Impact Analysis (IBM DBB Simulation):** A Python execution agent (`dbb_zowe_pipeline.py`) parses the Git tree, establishes dependency references, and confirms target mainframe dataset integrity.
-3.  **Zowe Layer Emulation:** The pipeline models communication with the z/OSMF workflow layers via API configurations.
-4.  **Ansible Orchestration:** Playbooks automate the creation of USS runtime structures, packaging code assets into deployment-ready release tarballs.
-
----
-
 ## 📂 Project Structure
 ```text
 ├── .github/workflows/
@@ -88,6 +80,7 @@ graph TD
 ├── dbb_zowe_pipeline.py      # Python integration & DBB engine
 ├── deploy_to_zos.yml         # Ansible deployment playbook
 ├── hosts.ini                 # Environment infrastructure targets
+├── Dockerfile                # Cloud-native container packaging configuration
 ├── .gitignore                # Repository filter rules
 └── README.md                 # Project documentation
 ```
@@ -96,22 +89,27 @@ graph TD
 
 ## 🚀 How to Run Locally
 
-### Prerequisites
-*   Python 3.x installed
-*   Ansible installed 
+### Execution via Docker (Recommended)
+To run the entire pipeline inside an isolated, cloud-native container layout:
+1. Build the Docker Image:
+   ```bash
+   docker build -t z-bridge-engine .
+   ```
+2. Run the Containerized Pipeline Sequence:
+   ```bash
+   docker run --rm z-bridge-engine
+   ```
 
-### Execution Steps
+### Execution Native Local
 1. Clone this repository:
    ```bash
    git clone https://github.com
    cd z-bridge-mainframe-devops
    ```
-
 2. Run the Mainframe DBB and Zowe API Simulation engine:
    ```bash
    python dbb_zowe_pipeline.py
    ```
-
 3. Execute the Ansible deployment playbook targeting the simulated z/OS environment:
    ```bash
    ansible-playbook -i hosts.ini deploy_to_zos.yml
@@ -123,3 +121,5 @@ graph TD
 *   **Git-to-Mainframe Integration:** Demonstrates real-world fluency in migrating mainframe application workflows off CA Endevor/Changeman over to standard Git branching layouts.
 *   **Modernizing with Python:** Shows the ability to replace old REXX or manual TSO routines with elegant, cross-platform Python scripts to scan metadata.
 *   **Infrastructure-as-Code:** Proves ability to author complex multi-step Ansible playbooks targeting system automation setups.
+*   **Cloud-Native Portability:** Demonstrates how packaging configuration automation tools inside a Docker container makes the pipeline plug-and-play ready for enterprise orchestration platforms like Kubernetes or Red Hat OpenShift on IBM Z.
+
