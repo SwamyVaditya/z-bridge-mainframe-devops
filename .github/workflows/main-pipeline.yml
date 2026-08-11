@@ -25,6 +25,8 @@ jobs:
 
     - name: 3. Run Impact Analysis (Mock IBM DBB Engine)
       run: |
+        echo "=== Installing Script Dependencies ==="
+        pip install pyyaml
         echo "=== Starting Source Code Scan & Dependency Mapping ==="
         python dbb_zowe_pipeline.py
 
