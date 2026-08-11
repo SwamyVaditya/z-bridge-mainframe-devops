@@ -1,0 +1,17 @@
+# Python bytecode and cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local environment and data artifacts
+build_artifacts/
+devops_build_report.json
+.pytest_cache/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ansible retry files
+*.retry
