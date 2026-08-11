@@ -1,0 +1,56 @@
+name: Z-Bridge Mainframe DevOps Pipeline
+
+# Trigger the pipeline on pushes or pull requests to the main branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  mainframe-devops-lifecycle:
+    name: Execute Git-to-z/OS Mainframe CI/CD
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 1. Checkout Codebase
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Fetches full history so Git diffs can analyze changes
+
+    - name: 2. Set Up Python Environment
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: 3. Run Impact Analysis (Mock IBM DBB Engine)
+      run: |
+        echo "=== Starting Source Code Scan & Dependency Mapping ==="
+        python dbb_zowe_pipeline.py
+
+    - name: 4. Verify Generated DevOps Artifacts
+      run: |
+        if [ -f "devops_build_report.json" ]; then
+          echo "[SUCCESS] DBB Analysis complete. Build report generated."
+          cat devops_build_report.json
+        else
+          echo "[ERROR] Pipeline failed: devops_build_report.json not found."
+          exit 1
+        fi
+
+    - name: 5. Install Ansible on Pipeline Runner
+      run: |
+        echo "=== Installing Ansible for z/OS Deployment Workflows ==="
+        sudo apt-get update
+        sudo apt-get install -y ansible
+
+    - name: 6. Execute Ansible Deployment Playbook (USS Provisioning)
+      run: |
+        echo "=== Launching Ansible Playbook ==="
+        ansible-playbook -i hosts.ini deploy_to_zos.yml
+
+    - name: 7. Archive Pipeline Reports for Auditing
+      uses: actions/upload-artifact@v4
+      with:
+        name: mainframe-devops-build-report
+        path: devops_build_report.json
