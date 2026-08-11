@@ -16,6 +16,58 @@ It models the transition of source assets out of legacy SCM platforms (like CA E
 
 ---
 
+---
+
+## 🏗️ Architecture Blueprint
+
+```mermaid
+graph TD
+    %% Define Styles & Visual Anchors
+    classDef gitStyle fill:#f05032,stroke:#333,stroke-width:2px,color:#fff;
+    classDef ciStyle fill:#2088FF,stroke:#333,stroke-width:2px,color:#fff;
+    classDef scriptStyle fill:#3776AB,stroke:#333,stroke-width:2px,color:#fff;
+    classDef ansibleStyle fill:#EE0000,stroke:#333,stroke-width:2px,color:#fff;
+    classDef targetStyle fill:#001E62,stroke:#333,stroke-width:2px,color:#fff;
+
+    %% Source Control Layer
+    subimport["Legacy SCM Silo: CA Endevor"] -->|Code Migration| GitRepo[GitHub Repository]
+    LocalDev["Developer Changes COBOL/JCL"] -->|Git Push / PR| GitRepo
+    class GitRepo gitStyle;
+
+    %% Automation Pipeline Layer
+    GitRepo -->|Triggers Workflow| GHAction["GitHub Actions CI/CD Runner"]
+    class GHAction ciStyle;
+
+    subgraph GitHub_Actions_Runner ["Cloud CI/CD Environment"]
+        GHAction --> Step1["Set up Python Runtime"]
+        
+        %% Python Engine
+        Step1 --> Step2["Execute dbb_zowe_pipeline.py"]
+        class Step2 scriptStyle;
+        Step2 -->|Simulate IBM DBB| DBB["Analyze Git Diff & Map Dependencies"]
+        Step2 -->|Simulate Zowe API| Zowe["Mock z/OSMF Authentication & Job Submission"]
+        DBB --> Report["Generate devops_build_report.json"]
+        
+        %% Ansible Engine
+        Report --> Step3["Install & Initialize Ansible"]
+        Step3 --> Step4["Execute deploy_to_zos.yml"]
+        class Step4 ansibleStyle;
+        Step4 -->|YAML Config| Pack["Package COBOL/JCL into Release Tarball"]
+    end
+
+    %% Target Environment Deployment
+    Pack -->|Simulated Target Infrastructure| TargetUSS["Target Workspace: /tmp/mock_zos/uss/"]
+    class TargetUSS targetStyle;
+    
+    subgraph Simulated_Mainframe ["Target Host: localhost"]
+        TargetUSS --> USS_Bin["/bin directory"]
+        TargetUSS --> USS_Deploy["/deploy/code directory"]
+        USS_Deploy -->|Catalog Binary Module| PDS["Simulated Load Library: MY.LOADLIB"]
+    end
+```
+
+---
+
 ## 🏗️ Architecture Workflow
 
 1.  **Git Ingestion:** Code changes to COBOL (`/cobol`) or JCL (`/jcl`) trigger the DevOps pipeline.
